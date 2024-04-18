@@ -8,6 +8,15 @@
   }
 }
 
+.loading {
+  font-size: 32px;
+  font-weight: 700;
+  z-index: 200;
+  position: absolute;
+  top: 50vh;
+  left: 50vw;
+}
+
 .chart-container {
   display: flex;
   justify-content: center;

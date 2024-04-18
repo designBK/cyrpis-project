@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import logo from './logo.svg';
 import './App.scss';
 import { useState } from 'react';
 import { Bar } from 'react-chartjs-2';
@@ -30,7 +29,7 @@ function App() {
   }
 
   if(!papers) {
-    return(<div>Loading...</div>);
+    return(<div className='loading'>Loading...</div>);
   }
 
   let chartData = {
