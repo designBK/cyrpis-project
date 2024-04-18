@@ -37,8 +37,8 @@ function App() {
     labels: papers.map(paper => paper.yearPublished),
     datasets: papers.map(paper => ({
       label: paper.title,
-      data: paper.publishedDate
-
+      data: paper.publishedDate,
+      backgroundColor: 'rgb(11, 18, 246)'
     }))
   };
 
