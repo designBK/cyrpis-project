@@ -9,24 +9,49 @@ Chart.register(BarElement);
 
 function App() {
   const [papers, setPapers] = useState(null);
-  const [inputValue, setInputValue] = useState('');
+  const [searchFilter, setFilterValue] = useState(null);
+  const [pageSize, setPageSize] = useState(10);
 
-  useEffect(() => {fetchPapers("https://api.core.ac.uk/v3/search/works")}, []);
+  const getURL = (pageSize, filter) => {
+    let url = `https://api.core.ac.uk/v3/search/works?limit=${pageSize}`;
+    if (filter) {
+      url += `&q=(${searchFilter})`;
+    }
 
-  const fetchPapers = async (url) => {
-    const response = await fetch(url);
-    const results = await response.json();
-    setPapers(results.results);
+    return url;
+  }
+
+  useEffect(() => {fetchPapers(pageSize, searchFilter)}, []);
+  useEffect(() => {fetchPapers(pageSize, searchFilter)}, [pageSize]);
+
+  const fetchPapers = async (pageSize, searchFilter) => {
+    const response = await fetch(getURL(pageSize, searchFilter));
+    const responseJson = await response.json();
+    setPapers(responseJson.results);
   }
 
   const handleInputChange = (e) => {
-    setInputValue(e.target.value);
+    setFilterValue(e.target.value);
   };
 
-  const filterChanges = () => {
-    const url = 'https://api.core.ac.uk/v3/search/works?q=('+ inputValue + ')';
-    fetchPapers(url);
+  const filterChanges = async () => {
+    await fetchPapers(pageSize, searchFilter);
   }
+
+  const changePageSize = async (e) => {
+    setPageSize(e.target.value);
+  }
+
+  const countOccurrences = (filter, text) => {
+    if (!filter) {
+      return 0;
+    }
+    const escapedFilter = filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regexPattern = new RegExp(escapedFilter, 'gi');
+    const matches = text.match(regexPattern);
+
+    return matches ? matches.length : 0;
+}
 
   if(!papers) {
     return(<div className='loading'>Loading...</div>);
@@ -51,15 +76,21 @@ function App() {
     <div className='filter-row'>
       <input type="text" placeholder='Filters' onChange={handleInputChange}/>
       <button onClick={filterChanges}>Filter</button>
+      <select onChange={changePageSize} name="pageSizes" id="">
+        <option value="2">2</option>
+        <option value="5">5</option>
+        <option selected value="10">10</option>
+      </select>
     </div>
      <div className='card-container'>
         {papers.map((data) => {
           return(
             <div className='card-style'>
               <h4>{data.title}</h4>
-              <p>Language: {data.language.name}</p>
+              <p>Language: {data.language?.name ?? "No Language Available"}</p>
+              <p>Number of Hits: {countOccurrences(searchFilter, data.fullText)}</p>
               <p>Published: {data.yearPublished}</p>
-              <a href={data.downloadUrl}>Download</a>
+              <a href={data.downloadUrl}>View Paper</a>
             </div>
           );
         })}
@@ -69,3 +100,4 @@ function App() {
 }
 
 export default App;
+
